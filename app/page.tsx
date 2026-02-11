@@ -763,26 +763,41 @@ export default function Home() {
     try {
       const result = await callAIAgent(message, CHAT_AGENT_ID)
 
-      if (result.success && result.response?.result?.message) {
-        const agentMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: 'agent',
-          content: result.response.result.message,
-          timestamp: new Date().toISOString(),
-          channel: 'chat'
-        }
-        setChatMessages(prev => [...prev, agentMessage])
+      if (result.success && result.response) {
+        // Extract text from various possible response formats
+        const responseText =
+          result.response.message ||
+          result.response.result?.message ||
+          result.response.result?.text ||
+          result.response.result?.answer ||
+          (typeof result.response.result === 'string' ? result.response.result : null) ||
+          JSON.stringify(result.response.result)
 
-        // Add to conversation history
-        const newConv: ConversationRecord = {
-          id: Date.now().toString(),
-          date: new Date().toLocaleDateString(),
-          channel: 'chat',
-          customer: 'Current User',
-          summary: message.slice(0, 50) + (message.length > 50 ? '...' : ''),
-          messages: [userMessage, agentMessage]
+        if (responseText) {
+          const agentMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'agent',
+            content: responseText,
+            timestamp: new Date().toISOString(),
+            channel: 'chat'
+          }
+          setChatMessages(prev => [...prev, agentMessage])
+
+          // Add to conversation history
+          const newConv: ConversationRecord = {
+            id: Date.now().toString(),
+            date: new Date().toLocaleDateString(),
+            channel: 'chat',
+            customer: 'Current User',
+            summary: message.slice(0, 50) + (message.length > 50 ? '...' : ''),
+            messages: [userMessage, agentMessage]
+          }
+          setConversations(prev => [newConv, ...prev])
+        } else {
+          throw new Error('No response text found')
         }
-        setConversations(prev => [newConv, ...prev])
+      } else {
+        throw new Error(result.error || 'Agent returned unsuccessful response')
       }
     } catch (err) {
       console.error('Chat error:', err)
