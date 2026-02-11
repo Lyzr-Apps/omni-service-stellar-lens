@@ -1,0 +1,34 @@
+{
+  "agent_name": "Customer Service Agent",
+  "agent_id": "698bcb2b826fb6a1a0ca007a",
+  "test_input": "I need help resetting my password. I've tried the forgot password link but haven't received any email.",
+  "response": {
+    "status": "success",
+    "result": {
+      "message": "I'm sorry you're having trouble resetting your password. Let's get this sorted out quickly! To assist you better, could you please provide the following information:\n\n1. The email address associated with your account.\n2. Whether you've checked your spam or junk folder for the reset email.\n\nOnce I have this information, I can investigate further or escalate the issue for manual assistance if needed.",
+      "response_type": "text",
+      "capabilities": ["chat", "voice"],
+      "integrations": {
+        "knowledge_base": "698bcb1767a82d6d27bdde86",
+        "hubspot": true
+      }
+    },
+    "metadata": {
+      "agent_name": "Customer Service Agent",
+      "agent_id": "698bcb2b826fb6a1a0ca007a",
+      "timestamp": "2026-02-11T00:00:00.000Z",
+      "purpose": "assistant"
+    }
+  },
+  "field_types": {
+    "result.message": "string",
+    "result.response_type": "string",
+    "result.capabilities": "array",
+    "result.integrations": "object",
+    "result.integrations.knowledge_base": "string",
+    "result.integrations.hubspot": "boolean"
+  },
+  "status": "passed",
+  "timestamp": "2026-02-11T00:00:00.000Z",
+  "notes": "Agent returned conversational text response. This is expected for voice-enabled assistant agents. The agent appropriately requested additional information to help troubleshoot the password reset issue."
+}

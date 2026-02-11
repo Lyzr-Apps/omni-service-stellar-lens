@@ -1,0 +1,78 @@
+{
+  "workflow_name": "Omni-Channel Customer Service Hub",
+  "workflow_description": "Voice and chat-enabled customer service system with knowledge base and HubSpot ticketing integration",
+  "agents": [
+    {
+      "agent_id": "698bcb2b826fb6a1a0ca007a",
+      "name": "Customer Service Agent",
+      "type": "voice_and_chat",
+      "description": "Handles customer inquiries across chat and voice channels, searches knowledge base for answers, creates support tickets for complex issues",
+      "provider": "OpenAI",
+      "model": "gpt-4.1",
+      "temperature": 0.4,
+      "top_p": 0.95,
+      "has_knowledge_base": true,
+      "rag_id": "698bcb1767a82d6d27bdde86",
+      "rag_name": "customerservicekbhmvz",
+      "has_voice": true,
+      "voice_config": {
+        "initiator": "human",
+        "message": "Hello! Thank you for contacting customer support. How can I help you today?",
+        "language": "English",
+        "voice": "sage"
+      },
+      "tools": [
+        {
+          "tool_name": "hubspot",
+          "tool_source": "composio",
+          "action_names": ["HUBSPOT_CREATE_TICKET"]
+        }
+      ],
+      "response_schema_file": "response_schemas/customer_service_agent_response.json"
+    }
+  ],
+  "knowledge_bases": [
+    {
+      "rag_id": "698bcb1767a82d6d27bdde86",
+      "rag_name": "customerservicekbhmvz",
+      "collection_name": "customerservicekbhmvz",
+      "description": "Knowledge base containing business documentation, customer support information, FAQs, product details, and troubleshooting guides",
+      "used_by_agents": ["Customer Service Agent"]
+    }
+  ],
+  "workflow_structure": {
+    "nodes": [
+      {
+        "id": "input_node",
+        "type": "Input",
+        "label": "Customer Interaction (Chat/Voice)",
+        "nodeCategory": "input"
+      },
+      {
+        "id": "customer_service_agent",
+        "type": "Agent",
+        "label": "Customer Service Agent",
+        "nodeCategory": "agent",
+        "agent_id": "698bcb2b826fb6a1a0ca007a"
+      },
+      {
+        "id": "output_node",
+        "type": "Output",
+        "label": "Customer Response",
+        "nodeCategory": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "input_node",
+        "target": "customer_service_agent"
+      },
+      {
+        "source": "customer_service_agent",
+        "target": "output_node"
+      }
+    ]
+  },
+  "created_at": "2026-02-11T00:00:00Z",
+  "status": "ready"
+}

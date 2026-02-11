@@ -1,0 +1,43 @@
+{
+  "agent_name": "Customer Service Agent",
+  "agent_id": "698bcb2b826fb6a1a0ca007a",
+  "agent_purpose": "assistant",
+  "description": "Voice-enabled customer service assistant that provides conversational text responses. Uses knowledge base (RAG) for information retrieval and HubSpot integration for ticket management.",
+  "response_schema": {
+    "status": "string (success|error)",
+    "result": {
+      "response": "string",
+      "action_taken": "string (optional)",
+      "data": "object (optional, any structured data)",
+      "suggestions": [
+        "string (optional)"
+      ]
+    },
+    "metadata": {
+      "agent_name": "string",
+      "timestamp": "string (ISO)"
+    }
+  },
+  "example_response": {
+    "status": "success",
+    "result": {
+      "response": "I've completed the task you requested",
+      "action_taken": "Processed the input and generated output",
+      "data": {
+        "key": "value"
+      },
+      "suggestions": [
+        "You might also want to try X"
+      ]
+    },
+    "metadata": {
+      "agent_name": "Customer Service Agent",
+      "timestamp": "2025-01-15T10:30:00Z"
+    }
+  },
+  "is_actual_tested": false,
+  "test_timestamp": null,
+  "test_message_used": "Hello, provide a sample response",
+  "raw_test_response": "Certainly! Here\u2019s a sample customer service response:\n\nHello! Thank you for contacting support. How can I assist you today? If you have a question or need help with your account, please provide a few details and I\u2019ll be happy to help.\n\nIs there something specific you\u2019d like assistance with?",
+  "test_error": "Response not valid JSON: Expecting value: line 1 column 1 (char 0)"
+}

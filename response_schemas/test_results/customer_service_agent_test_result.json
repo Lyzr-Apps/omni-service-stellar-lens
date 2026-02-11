@@ -1,0 +1,15 @@
+{
+  "agent_name": "Customer Service Agent",
+  "agent_id": "698bcb2b826fb6a1a0ca007a",
+  "test_message": "I need help resetting my password. I've tried the forgot password link but haven't received any email.",
+  "expected_purpose": "assistant",
+  "timestamp": "2026-02-11T00:20:55.285029",
+  "is_valid_json": false,
+  "validation_errors": [
+    "Response is not valid JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "actual_response": {
+    "raw_text": "I'm sorry you're having trouble resetting your password. Let's get this sorted out quickly! To assist you better, could you please provide the following information:\n\n1. The email address associated with your account.\n2. Whether you've checked your spam or junk folder for the reset email.\n\nOnce I have this information, I can investigate further or escalate the issue for manual assistance if needed."
+  },
+  "raw_response": "I'm sorry you're having trouble resetting your password. Let's get this sorted out quickly! To assist you better, could you please provide the following information:\n\n1. The email address associated with your account.\n2. Whether you've checked your spam or junk folder for the reset email.\n\nOnce I have this information, I can investigate further or escalate the issue for manual assistance if needed."
+}
