@@ -72,6 +72,7 @@ interface ConversationRecord {
   date: string
   channel: 'chat' | 'voice'
   customer: string
+  userId: string
   summary: string
   messages: ChatMessage[]
 }
@@ -422,10 +423,12 @@ function VoiceCallPanel({ useSampleData }: { useSampleData: boolean }) {
 
 function Dashboard({
   conversations,
-  useSampleData
+  useSampleData,
+  currentUserId
 }: {
   conversations: ConversationRecord[]
   useSampleData: boolean
+  currentUserId: string
 }) {
   const [filter, setFilter] = useState<'all' | 'chat' | 'voice'>('all')
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -435,9 +438,12 @@ function Dashboard({
   const totalChats = conversations.filter(c => c.channel === 'chat').length
   const totalVoice = conversations.filter(c => c.channel === 'voice').length
 
+  // Get unique users count
+  const uniqueUsers = new Set(conversations.map(c => c.userId)).size
+
   return (
     <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 backdrop-blur-lg shadow-lg">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Conversations</CardTitle>
@@ -462,6 +468,15 @@ function Dashboard({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">{totalVoice}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-border/50 backdrop-blur-lg shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unique Users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{uniqueUsers}</div>
           </CardContent>
         </Card>
       </div>
@@ -515,8 +530,14 @@ function Dashboard({
                       {conv.channel}
                     </Badge>
                     <div className="flex-1">
-                      <div className="font-medium text-sm">{conv.customer}</div>
+                      <div className="font-medium text-sm flex items-center gap-2">
+                        {conv.customer}
+                        {conv.userId === currentUserId && (
+                          <Badge variant="outline" className="text-xs">You</Badge>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{conv.summary}</div>
+                      <div className="text-xs text-muted-foreground mt-1">User: {conv.userId}</div>
                     </div>
                     <div className="text-xs text-muted-foreground">{conv.date}</div>
                   </div>
@@ -525,6 +546,17 @@ function Dashboard({
 
                 {expandedId === conv.id && (
                   <div className="border-t border-border/50 p-4 bg-muted/20">
+                    <div className="mb-3 pb-2 border-b border-border/50">
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium">Session ID:</span> {conv.id}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium">User ID:</span> {conv.userId}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium">Channel:</span> {conv.channel}
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       {conv.messages.map((msg) => (
                         <div key={msg.id} className={`text-sm ${msg.role === 'user' ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -668,6 +700,48 @@ export default function Home() {
   const [conversations, setConversations] = useState<ConversationRecord[]>([])
   const [chatLoading, setChatLoading] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+  const [sessionId, setSessionId] = useState<string>('')
+
+  // Initialize user ID and load conversations
+  useEffect(() => {
+    // Get or create user ID
+    let userId = localStorage.getItem('omnichannel_user_id')
+    if (!userId) {
+      userId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+      localStorage.setItem('omnichannel_user_id', userId)
+    }
+    setCurrentUserId(userId)
+
+    // Create session ID for this session
+    const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    setSessionId(newSessionId)
+
+    // Load conversations for this user
+    loadConversations(userId)
+  }, [])
+
+  const loadConversations = (userId: string) => {
+    const stored = localStorage.getItem(`conversations_${userId}`)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          setConversations(parsed)
+        }
+      } catch (err) {
+        console.error('Error loading conversations:', err)
+      }
+    }
+  }
+
+  const saveConversations = (convs: ConversationRecord[], userId: string) => {
+    try {
+      localStorage.setItem(`conversations_${userId}`, JSON.stringify(convs))
+    } catch (err) {
+      console.error('Error saving conversations:', err)
+    }
+  }
 
   useEffect(() => {
     setCurrentTime(new Date().toLocaleTimeString())
@@ -715,6 +789,7 @@ export default function Home() {
           date: new Date().toLocaleDateString(),
           channel: 'chat',
           customer: 'john@example.com',
+          userId: 'sample-user-1',
           summary: 'Password reset issue - ticket created',
           messages: sampleMessages
         },
@@ -723,6 +798,7 @@ export default function Home() {
           date: new Date(Date.now() - 86400000).toLocaleDateString(),
           channel: 'voice',
           customer: 'Customer #4231',
+          userId: 'sample-user-2',
           summary: 'Billing inquiry - resolved',
           messages: [
             { id: 'v1', role: 'user', content: 'Question about my last invoice', timestamp: new Date(Date.now() - 86400000).toISOString(), channel: 'voice' },
@@ -734,6 +810,7 @@ export default function Home() {
           date: new Date(Date.now() - 172800000).toLocaleDateString(),
           channel: 'chat',
           customer: 'sarah@example.com',
+          userId: 'sample-user-3',
           summary: 'Product recommendation - completed',
           messages: [
             { id: 'c1', role: 'user', content: 'Which plan is best for small teams?', timestamp: new Date(Date.now() - 172800000).toISOString(), channel: 'chat' },
@@ -761,7 +838,10 @@ export default function Home() {
     setChatLoading(true)
 
     try {
-      const result = await callAIAgent(message, CHAT_AGENT_ID)
+      const result = await callAIAgent(message, CHAT_AGENT_ID, {
+        user_id: currentUserId,
+        session_id: sessionId
+      })
 
       if (result.success && result.response) {
         // Extract text from various possible response formats
@@ -783,16 +863,19 @@ export default function Home() {
           }
           setChatMessages(prev => [...prev, agentMessage])
 
-          // Add to conversation history
+          // Add to conversation history for this user
           const newConv: ConversationRecord = {
             id: Date.now().toString(),
             date: new Date().toLocaleDateString(),
             channel: 'chat',
-            customer: 'Current User',
+            customer: currentUserId,
+            userId: currentUserId,
             summary: message.slice(0, 50) + (message.length > 50 ? '...' : ''),
             messages: [userMessage, agentMessage]
           }
-          setConversations(prev => [newConv, ...prev])
+          const updatedConvs = [newConv, ...conversations]
+          setConversations(updatedConvs)
+          saveConversations(updatedConvs, currentUserId)
         } else {
           throw new Error('No response text found')
         }
@@ -825,6 +908,11 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">AI-powered support across chat and voice</p>
             </div>
             <div className="flex items-center gap-4">
+              {currentUserId && (
+                <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg">
+                  <span className="font-medium">User:</span> {currentUserId.slice(0, 20)}...
+                </div>
+              )}
               <div className="text-sm text-muted-foreground">{currentTime}</div>
               <div className="flex items-center gap-2">
                 <Label htmlFor="sample-toggle" className="text-sm">Sample Data</Label>
@@ -865,7 +953,7 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="dashboard" className="h-full m-0 overflow-auto">
-                <Dashboard conversations={conversations} useSampleData={useSampleData} />
+                <Dashboard conversations={conversations} useSampleData={useSampleData} currentUserId={currentUserId} />
               </TabsContent>
 
               <TabsContent value="knowledge" className="h-full m-0 overflow-auto p-6">
